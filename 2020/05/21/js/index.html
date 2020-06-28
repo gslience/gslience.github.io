@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html  lang="zh-CN" >
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+    <title>ES7 ES8新特性 | Web</title>
+    <meta name="description" content="ES7 数组的includes方法，判断特定的元素是否在数组中，返回Boolean值， 用法: 123[1, 2, 3, 4].includes(2); &#x2F;&#x2F; true[1, 2, 3, 4].includes(8); &#x2F;&#x2F; false 之前通过indexOf来判断元素是否存在数组中： 1[1, 2, 3, 4].indexOf(2) &gt; -1; &#x2F;&#x2F; true Math.pow的简写， 用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ES7 ES8新特性">
+<meta property="og:url" content="https://github.com/gslience/gslience.github.io/2020/05/21/js/index.html">
+<meta property="og:site_name" content="Web">
+<meta property="og:description" content="ES7 数组的includes方法，判断特定的元素是否在数组中，返回Boolean值， 用法: 123[1, 2, 3, 4].includes(2); &#x2F;&#x2F; true[1, 2, 3, 4].includes(8); &#x2F;&#x2F; false 之前通过indexOf来判断元素是否存在数组中： 1[1, 2, 3, 4].indexOf(2) &gt; -1; &#x2F;&#x2F; true Math.pow的简写， 用">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-05-21T07:12:34.000Z">
+<meta property="article:modified_time" content="2020-06-22T14:16:22.777Z">
+<meta property="article:author" content="gslience">
+<meta property="article:tag" content="JS">
+<meta name="twitter:card" content="summary">
+
+    
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
+
+    
+<link rel="stylesheet" href="/css/common.min.css">
+
+
+
+    
+    
+    
+    
+        <link href="//cdn.jsdelivr.net/npm/lightgallery.js@1.1.3/dist/css/lightgallery.min.css" rel="stylesheet">
+    
+    
+    
+<link rel="stylesheet" href="/css/iconfont.min.css">
+
+    
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+    <body>
+        <header class="header header-fixture">
+    <div class="profile-search-wrap flex sm:block">
+        
+        
+        <div class="profile sm:text-center md:px-1 lg:px-3 sm:pb-4 sm:pt-6">
+            <a id="avatar" role="link" href="https://github.com/fengkx" class="inline-block lg:w-16 lg:h-16 w-8 h-8 m-2" target="_blank" rel="noopener" rel="noreferrer" >
+                <img src="https://www.gravatar.com/avatar/0bc83cb571cd1c50ba6f3e8a78ef1346?s=128" class="rounded-full" alt="avatar">
+            </a>
+            <h2 id="name" class="hidden lg:block">gslience</h2>
+            <h3 id="title" class="hidden xl:block">Coder</h3>
+            
+            <small id="location" class="hidden lg:block">
+                <i class="iconfont icon-map-icon"></i>
+                Guangzhou, China
+            </small>
+            
+        </div>
+        
+        
+<div class="search flex-1 flex lg:inline-block sm:hidden lg:px-4 lg:mt-2 lg:mb-4 lg:w-full">
+    <form id="search-form" class="my-auto flex-1 lg:border lg:border-solid lg:border-gray-200">
+        <div class="input-group table bg-gray-100 lg:bg-white w-full">
+            <input id="search-input" type="text" placeholder="搜索" class="inline-block w-full bg-gray-100 lg:bg-white">
+            <span class="table-cell">
+                <button name="search tigger button" disabled>
+                    <i class="iconfont icon-search m-2"></i>
+                </button>
+            </span>
+        </div>
+    </form>
+        
+<script id="search-teamplate" type="text/html" data-path="/content.json">
+    <div>
+        <div class="search-header bg-gray-400">
+            <input id="actual-search-input" model="keyword" ref="input" class="inline-block w-full h-10 px-2 py-1" placeholder="搜索" type="text">
+        </div>
+        <div class="search-result bg-gray-200">
+            {{#each searchPosts}}
+            <a href="/{{ path }}" class="result-item block px-2 pb-3 mb-1 pt-1 hover:bg-indigo-100">
+                <i class="iconfont icon-file"></i>
+                <h1 class="result-title inline font-medium text-lg">{{ title }}</h1>
+                <p class="result-content text-gray-600 text-sm">{{{ text }}}</p>
+            </a>
+            {{/each}}
+        </div>
+    </div>
+</script>
+
+</div>
+
+
+        <button name="menu toogle button" id="menu-toggle-btn" class="block sm:hidden p-3" role="button" aria-expanded="false">
+            <i class="iconfont icon-hamburger"></i>
+        </button>
+    </div>
+    <nav id="menu-nav" class="hidden sm:flex flex-col">
+        
+        
+            <div class="menu-item menu-home" role="menuitem">
+                <a href="/.">
+                    <i class="iconfont icon-home" aria-hidden="true"></i>
+                    <span class="menu-title">首页</span>
+                </a>
+            </div>
+        
+        
+            <div class="menu-item menu-archives" role="menuitem">
+                <a href="/archives">
+                    <i class="iconfont icon-archive" aria-hidden="true"></i>
+                    <span class="menu-title">归档</span>
+                </a>
+            </div>
+        
+        
+            <div class="menu-item menu-categories" role="menuitem">
+                <a href="/categories">
+                    <i class="iconfont icon-folder" aria-hidden="true"></i>
+                    <span class="menu-title">分类</span>
+                </a>
+            </div>
+        
+        
+            <div class="menu-item menu-tags" role="menuitem">
+                <a href="/tags">
+                    <i class="iconfont icon-tag" aria-hidden="true"></i>
+                    <span class="menu-title">标签</span>
+                </a>
+            </div>
+        
+        
+<div class="social-links flex sm:flex-col lg:hidden mt-5">
+    
+        <span class="social-item text-center">
+            <a href="https://github.com/fengkx">
+                <i class="iconfont social-icon icon-github"></i>
+                <span class="menu-title hidden lg:inline">menu.github</span>
+            </a>
+        </span>
+    
+        <span class="social-item text-center">
+            <a href="https://t.me/fengkx" target="_blank" rel="noopener">
+                <i class="iconfont social-icon icon-telegram"></i>
+                <span class="menu-title hidden lg:inline">menu.telegram</span>
+            </a>
+        </span>
+    
+        <span class="social-item text-center">
+            <a href="https://twitter.com/example" target="_blank" rel="noopener">
+                <i class="iconfont social-icon icon-twitter"></i>
+                <span class="menu-title hidden lg:inline">menu.twitter</span>
+            </a>
+        </span>
+    
+        <span class="social-item text-center">
+            <a href="/atom.xml">
+                <i class="iconfont social-icon icon-rss"></i>
+                <span class="menu-title hidden lg:inline">menu.rss</span>
+            </a>
+        </span>
+    
+</div>
+
+
+    </nav>
+</header>
+
+        <section class="main-section">
+            
+    <main class="flex-1 px-4 py-12 md:px-5 lg:px-8 lg:py-4 relative min-h-screen">
+    
+
+    <article class="content article article-archives article-type-list" itemscope="">
+        <header class="article-header">
+            
+    
+        <h1 class="article-title text-lg" itemprop="name">
+            ES7 ES8新特性
+        </h1>
+    
+
+
+
+            <p class="article-meta mb-3 text-xs">
+                <span class="article-date">
+    <i class="iconfont icon-calendar-check"></i>
+	<a href="/2020/05/21/js/" class="article-date">
+	  <time datetime="2020-05-21T07:12:34.000Z" itemprop="datePublished">5月 21</time>
+	</a>
+</span>
+
+                
+
+                
+    <span class="article-tags">
+    <i class="iconfont icon-tag"></i>
+    <a class="article-tag-link" href="/tags/JS/" rel="tag">JS</a>
+  </span>
+
+
+                <span class="_partial/post-comment"><i class="icon icon-comment"></i>
+                    <a href="/2020/05/21/js/#comments" class="article-comment-link">
+                        评论
+                    </a>
+                </span>
+                
+
+            </p>
+        </header>
+        <div class="marked-body article-body">
+            <h2 id="ES7">ES7</h2>
+<h4 id="数组的includes方法，判断特定的元素是否在数组中，返回Boolean值，-用法">数组的includes方法，判断特定的元素是否在数组中，返回Boolean值， 用法:</h4>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>].includes(<span class="number">2</span>); <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>].includes(<span class="number">8</span>); <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>之前通过indexOf来判断元素是否存在数组中：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>].indexOf(<span class="number">2</span>) &gt; <span class="number">-1</span>; <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<h4 id="Math-pow的简写，-用法">Math.pow的简写， 用法:</h4>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Math</span>.pow(<span class="number">2</span>, <span class="number">3</span>));</span><br><span class="line"><span class="built_in">console</span>.log(<span class="number">2</span> ** <span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="ES8">ES8</h2>
+<h4 id="async和await处理异步-async函数的返回值是一个promise">async和await处理异步 async函数的返回值是一个promise</h4>
+<p>前端处理异步的方法</p>
+<p>1.嵌套调用</p>
+<p>2.Promise</p>
+<p>3.Generators(ES6)</p>
+<p>4.async和await(重点介绍)</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params">n</span>) </span>&#123;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> n + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line">add(<span class="number">4</span>).then(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(res); <span class="comment">// 5</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">promiseFn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      resolve(<span class="string">'result'</span>);</span><br><span class="line">    &#125;, <span class="number">1500</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">fn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> res = <span class="keyword">await</span> promiseFn();</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'异步代码执行完毕'</span>, res)</span><br><span class="line">&#125;</span><br><span class="line">fn();</span><br></pre></td></tr></table></figure>
+<p>await只能在async函数中使用， await是等待一个异步程序的运行结果， 后面的程序的执行得等结果返回之后</p>
+<p>以下正常的写法，无法捕获到程序错误, 程序中断， 数据结构的一致性很可能被破坏</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">promiseFn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      reject(<span class="string">'错误信息err'</span>);</span><br><span class="line">    &#125;, <span class="number">1500</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">fn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> res = <span class="keyword">await</span> promiseFn();</span><br><span class="line">  <span class="built_in">console</span>.log(res);</span><br><span class="line">&#125;</span><br><span class="line">fn();</span><br></pre></td></tr></table></figure>
+<p>捕获错误的处理：</p>
+<p>1.使用try-catch</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">promiseFn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      reject(<span class="string">'错误信息'</span>);</span><br><span class="line">    &#125;, <span class="number">1500</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">fn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">try</span>&#123;</span><br><span class="line">    <span class="keyword">let</span> res = <span class="keyword">await</span> promiseFn();</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'异步代码执行完毕'</span>, res);  </span><br><span class="line">  &#125;<span class="keyword">catch</span>(err) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(err); <span class="comment">// 错误信息被捕获了</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">fn();</span><br></pre></td></tr></table></figure>
+<p>2.使用Promise提供的catch</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">awaitWrap</span> (<span class="params">promise</span>) =&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> promise.resolve(<span class="function"><span class="params">()</span> =&gt;</span> [<span class="literal">null</span>, data])</span><br><span class="line">    .catch(<span class="function"><span class="params">()</span> =&gt;</span> [err, <span class="literal">null</span>])</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">promiseFn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      reject(<span class="string">'错误信息'</span>);</span><br><span class="line">    &#125;, <span class="number">1500</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">fn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 普通</span></span><br><span class="line">  <span class="keyword">let</span> res = <span class="keyword">await</span> promiseFn().catch(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(err);</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'异步代码执行完毕'</span>, res);  </span><br><span class="line">  <span class="comment">// 抽离错误处理方法</span></span><br><span class="line">  <span class="keyword">let</span> [err, data] = <span class="keyword">await</span> awaitWrap(promiseFn());</span><br><span class="line">  <span class="built_in">console</span>.log(err, data)</span><br><span class="line">&#125;</span><br><span class="line">fn();</span><br></pre></td></tr></table></figure>
+<p>多个await之间的代码互不依赖  使用promise.all</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">promiseFn1</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      resolve(<span class="string">'fn1'</span>);</span><br><span class="line">    &#125;, <span class="number">1000</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">promiseFn2</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      resolve(<span class="string">'fn2'</span>);</span><br><span class="line">    &#125;, <span class="number">2000</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">fn1</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.time(<span class="string">'fn1'</span>)</span><br><span class="line">  <span class="keyword">await</span> promiseFn1();</span><br><span class="line">  <span class="keyword">await</span> promiseFn2();</span><br><span class="line">  <span class="built_in">console</span>.timeEnd(<span class="string">'fn1'</span>) </span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">fn2</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.time(<span class="string">'fn2'</span>)</span><br><span class="line">  <span class="keyword">await</span> <span class="built_in">Promise</span>.all([promiseFn1(), promiseFn2()]);</span><br><span class="line">  <span class="built_in">console</span>.timeEnd(<span class="string">'fn2'</span>) </span><br><span class="line">&#125;</span><br><span class="line">fn1(); <span class="comment">// fn1: 3003.1640625ms</span></span><br><span class="line">fn2(); <span class="comment">// fn2: 2000.994873046875ms</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="Object-values-和Object-keys-es8之前遍历一个对象，需要用到Object-keys">Object.values()和Object.keys(), es8之前遍历一个对象，需要用到Object.keys()</h4>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;<span class="attr">name</span>: <span class="string">'test'</span>, <span class="attr">age</span>: <span class="number">5</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 之前</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Object</span>.keys(obj).map(<span class="function"><span class="params">key</span> =&gt;</span> obj[key])); <span class="comment">// ['test', 5]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ES8</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Object</span>.values(obj)); <span class="comment">// ['test', 5]</span></span><br></pre></td></tr></table></figure>
+<h4 id="Object-entries-vs-for…in-会枚举原型链中的属性">Object.entries() vs for…in(会枚举原型链中的属性)</h4>
+<p>Object.entries()传入的参数不是对象会被转成对象</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;<span class="attr">name</span>: <span class="string">'test'</span>, <span class="attr">age</span>: <span class="number">5</span>&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Object</span>.entries(obj)); <span class="comment">// [['name', 'test], ['age', 5]]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取对象的键值对</span></span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">const</span> [key, value] <span class="keyword">of</span> <span class="built_in">Object</span>.entries(obj)) &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;key&#125;</span> - <span class="subst">$&#123;value&#125;</span>`</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">Object</span>.entries(obj).forEach(<span class="function">(<span class="params">[key, value]</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;key&#125;</span> - <span class="subst">$&#123;value&#125;</span>`</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="字符串的操作方式，前面插入字符串：padStart-追加字符串：-padEnd">字符串的操作方式，前面插入字符串：padStart(), 追加字符串： padEnd()</h4>
+<p>String.prototype.padStart(targetLength, [padString]);<br>
+// targetLength 目标长度，即是追加之后字符串的长度  padString 追加的字符串</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'123'</span>.padStart(<span class="number">4</span>, <span class="string">'90'</span>); <span class="comment">//9123</span></span><br><span class="line"></span><br><span class="line"><span class="string">'123'</span>.padStart(<span class="number">1</span>); <span class="comment">//123</span></span><br><span class="line"></span><br><span class="line"><span class="string">'123'</span>.padStart(<span class="number">10</span>); <span class="comment">// 123 缺省值是空格</span></span><br></pre></td></tr></table></figure>
+<h4 id="结尾允许逗号-方便多人协作、代码的版本管理">结尾允许逗号  方便多人协作、代码的版本管理</h4>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 之前</span></span><br><span class="line"><span class="keyword">const</span> obj1 = &#123;</span><br><span class="line">  q: <span class="string">''</span>,</span><br><span class="line">  b: <span class="string">''</span>,</span><br><span class="line">  a: <span class="string">''</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// ES8支持</span></span><br><span class="line"><span class="keyword">const</span> obj2 = &#123;</span><br><span class="line">  q: <span class="string">''</span>,</span><br><span class="line">  b: <span class="string">''</span>,</span><br><span class="line">  a: <span class="string">''</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="Object-getOwnPropertyDescriptors-获取对象属性">Object.getOwnPropertyDescriptors() 获取对象属性</h4>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 之前</span></span><br><span class="line"><span class="keyword">const</span> obj = &#123;</span><br><span class="line"> name: <span class="string">'yideng'</span>,</span><br><span class="line"> <span class="keyword">get</span> fn() &#123;</span><br><span class="line">   <span class="keyword">return</span> <span class="string">'fn'</span>;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Object</span>.getOwnPropertyDescriptors(obj))</span><br></pre></td></tr></table></figure>
+
+        </div>
+        
+<blockquote class="copyright">
+    <p><strong>本文链接 : </strong><a class="permalink" href="https://github.com/gslience/gslience.github.io/2020/05/21/js/">https://github.com/gslience/gslience.github.io/2020/05/21/js/</a></p>
+    <p><strong>This article is available under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</a> License</strong></p>
+</blockquote>
+
+
+    </article>
+    
+    <section id="comments">
+        
+    </section>
+
+
+    
+
+</main>
+
+
+<aside style="" id="sidebar" class="aside aside-fixture">
+    <div class="toc-sidebar">
+        <nav id="toc" class="article-toc">
+            <h3 class="toc-title">文章目录</h3>
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ES7"><span class="toc-number">1.</span> <span class="toc-text">ES7</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#数组的includes方法，判断特定的元素是否在数组中，返回Boolean值，-用法"><span class="toc-number">1.0.1.</span> <span class="toc-text">数组的includes方法，判断特定的元素是否在数组中，返回Boolean值， 用法:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Math-pow的简写，-用法"><span class="toc-number">1.0.2.</span> <span class="toc-text">Math.pow的简写， 用法:</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ES8"><span class="toc-number">2.</span> <span class="toc-text">ES8</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#async和await处理异步-async函数的返回值是一个promise"><span class="toc-number">2.0.1.</span> <span class="toc-text">async和await处理异步 async函数的返回值是一个promise</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Object-values-和Object-keys-es8之前遍历一个对象，需要用到Object-keys"><span class="toc-number">2.0.2.</span> <span class="toc-text">Object.values()和Object.keys(), es8之前遍历一个对象，需要用到Object.keys()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Object-entries-vs-for…in-会枚举原型链中的属性"><span class="toc-number">2.0.3.</span> <span class="toc-text">Object.entries() vs for…in(会枚举原型链中的属性)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#字符串的操作方式，前面插入字符串：padStart-追加字符串：-padEnd"><span class="toc-number">2.0.4.</span> <span class="toc-text">字符串的操作方式，前面插入字符串：padStart(), 追加字符串： padEnd()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#结尾允许逗号-方便多人协作、代码的版本管理"><span class="toc-number">2.0.5.</span> <span class="toc-text">结尾允许逗号  方便多人协作、代码的版本管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Object-getOwnPropertyDescriptors-获取对象属性"><span class="toc-number">2.0.6.</span> <span class="toc-text">Object.getOwnPropertyDescriptors() 获取对象属性</span></a></li></ol></li></ol></li></ol>
+        </nav>
+    </div>
+</aside>
+
+
+
+
+
+        </section>
+        <footer class="hidden lg:block fixed bottom-0 left-0 sm:w-1/12 lg:w-1/6 bg-gray-100 z-40">
+    
+    <div class="footer-social-links">
+        
+            <a href="https://github.com/fengkx">
+                <i class="iconfont icon-github"></i>
+            </a>
+        
+            <a href="https://t.me/fengkx" target="_blank" rel="noopener">
+                <i class="iconfont icon-telegram"></i>
+            </a>
+        
+            <a href="https://twitter.com/example" target="_blank" rel="noopener">
+                <i class="iconfont icon-twitter"></i>
+            </a>
+        
+            <a href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+            </a>
+        
+    </div>
+    
+    
+</footer>
+
+        <div id="mask" class="hidden mask fixed inset-0 bg-gray-900 opacity-75 z-40"></div>
+        <div id="search-view-container" class="hidden shadow-xl"></div>
+        
+<script src="/js/dom-event.min.js"></script>
+
+<script src="//cdn.jsdelivr.net/npm/yox@1.0.0-alpha.121/dist/standard/prod/yox.min.js"></script>
+
+
+<script src="/js/search.min.js"></script>
+
+
+
+    <script src="//cdn.jsdelivr.net/npm/lightgallery.js@1.1.3/dist/js/lightgallery.min.js"></script>
+    
+<script src="/js/light-gallery.min.js"></script>
+
+
+
+
+
+    </body>
+</html>

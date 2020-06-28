@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html  lang="zh-CN" >
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+    <title>NodeJs的事件循环机制与浏览器的事件循环机制 | Web</title>
+    <meta name="description" content="javaScript是单线程的脚本语言 多线程有很多复杂性，比如： 多线程操作dom就会有很多复杂性，例如： 一个线程是删除dom，另一个线程更新同一个dom，这就造成冲突。 为避免这种情况的出现，JS是单线程的，另外JS的执行和运行是分开的，执行是依赖环境的，在node环境和浏览器环境下执行有区别。 eventLoop在浏览器环境下 浏览器执行js时，会分配一块堆内存(heap)和栈内存(sta">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NodeJs的事件循环机制与浏览器的事件循环机制">
+<meta property="og:url" content="https://github.com/gslience/gslience.github.io/2020/05/25/event-loop/index.html">
+<meta property="og:site_name" content="Web">
+<meta property="og:description" content="javaScript是单线程的脚本语言 多线程有很多复杂性，比如： 多线程操作dom就会有很多复杂性，例如： 一个线程是删除dom，另一个线程更新同一个dom，这就造成冲突。 为避免这种情况的出现，JS是单线程的，另外JS的执行和运行是分开的，执行是依赖环境的，在node环境和浏览器环境下执行有区别。 eventLoop在浏览器环境下 浏览器执行js时，会分配一块堆内存(heap)和栈内存(sta">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-05-25T10:08:59.000Z">
+<meta property="article:modified_time" content="2020-06-22T14:48:27.479Z">
+<meta property="article:author" content="gslience">
+<meta property="article:tag" content="js">
+<meta name="twitter:card" content="summary">
+
+    
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
+
+    
+<link rel="stylesheet" href="/css/common.min.css">
+
+
+
+    
+    
+    
+    
+        <link href="//cdn.jsdelivr.net/npm/lightgallery.js@1.1.3/dist/css/lightgallery.min.css" rel="stylesheet">
+    
+    
+    
+<link rel="stylesheet" href="/css/iconfont.min.css">
+
+    
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+    <body>
+        <header class="header header-fixture">
+    <div class="profile-search-wrap flex sm:block">
+        
+        
+        <div class="profile sm:text-center md:px-1 lg:px-3 sm:pb-4 sm:pt-6">
+            <a id="avatar" role="link" href="https://github.com/fengkx" class="inline-block lg:w-16 lg:h-16 w-8 h-8 m-2" target="_blank" rel="noopener" rel="noreferrer" >
+                <img src="https://www.gravatar.com/avatar/0bc83cb571cd1c50ba6f3e8a78ef1346?s=128" class="rounded-full" alt="avatar">
+            </a>
+            <h2 id="name" class="hidden lg:block">gslience</h2>
+            <h3 id="title" class="hidden xl:block">Coder</h3>
+            
+            <small id="location" class="hidden lg:block">
+                <i class="iconfont icon-map-icon"></i>
+                Guangzhou, China
+            </small>
+            
+        </div>
+        
+        
+<div class="search flex-1 flex lg:inline-block sm:hidden lg:px-4 lg:mt-2 lg:mb-4 lg:w-full">
+    <form id="search-form" class="my-auto flex-1 lg:border lg:border-solid lg:border-gray-200">
+        <div class="input-group table bg-gray-100 lg:bg-white w-full">
+            <input id="search-input" type="text" placeholder="搜索" class="inline-block w-full bg-gray-100 lg:bg-white">
+            <span class="table-cell">
+                <button name="search tigger button" disabled>
+                    <i class="iconfont icon-search m-2"></i>
+                </button>
+            </span>
+        </div>
+    </form>
+        
+<script id="search-teamplate" type="text/html" data-path="/content.json">
+    <div>
+        <div class="search-header bg-gray-400">
+            <input id="actual-search-input" model="keyword" ref="input" class="inline-block w-full h-10 px-2 py-1" placeholder="搜索" type="text">
+        </div>
+        <div class="search-result bg-gray-200">
+            {{#each searchPosts}}
+            <a href="/{{ path }}" class="result-item block px-2 pb-3 mb-1 pt-1 hover:bg-indigo-100">
+                <i class="iconfont icon-file"></i>
+                <h1 class="result-title inline font-medium text-lg">{{ title }}</h1>
+                <p class="result-content text-gray-600 text-sm">{{{ text }}}</p>
+            </a>
+            {{/each}}
+        </div>
+    </div>
+</script>
+
+</div>
+
+
+        <button name="menu toogle button" id="menu-toggle-btn" class="block sm:hidden p-3" role="button" aria-expanded="false">
+            <i class="iconfont icon-hamburger"></i>
+        </button>
+    </div>
+    <nav id="menu-nav" class="hidden sm:flex flex-col">
+        
+        
+            <div class="menu-item menu-home" role="menuitem">
+                <a href="/.">
+                    <i class="iconfont icon-home" aria-hidden="true"></i>
+                    <span class="menu-title">首页</span>
+                </a>
+            </div>
+        
+        
+            <div class="menu-item menu-archives" role="menuitem">
+                <a href="/archives">
+                    <i class="iconfont icon-archive" aria-hidden="true"></i>
+                    <span class="menu-title">归档</span>
+                </a>
+            </div>
+        
+        
+            <div class="menu-item menu-categories" role="menuitem">
+                <a href="/categories">
+                    <i class="iconfont icon-folder" aria-hidden="true"></i>
+                    <span class="menu-title">分类</span>
+                </a>
+            </div>
+        
+        
+            <div class="menu-item menu-tags" role="menuitem">
+                <a href="/tags">
+                    <i class="iconfont icon-tag" aria-hidden="true"></i>
+                    <span class="menu-title">标签</span>
+                </a>
+            </div>
+        
+        
+<div class="social-links flex sm:flex-col lg:hidden mt-5">
+    
+        <span class="social-item text-center">
+            <a href="https://github.com/fengkx">
+                <i class="iconfont social-icon icon-github"></i>
+                <span class="menu-title hidden lg:inline">menu.github</span>
+            </a>
+        </span>
+    
+        <span class="social-item text-center">
+            <a href="https://t.me/fengkx" target="_blank" rel="noopener">
+                <i class="iconfont social-icon icon-telegram"></i>
+                <span class="menu-title hidden lg:inline">menu.telegram</span>
+            </a>
+        </span>
+    
+        <span class="social-item text-center">
+            <a href="https://twitter.com/example" target="_blank" rel="noopener">
+                <i class="iconfont social-icon icon-twitter"></i>
+                <span class="menu-title hidden lg:inline">menu.twitter</span>
+            </a>
+        </span>
+    
+        <span class="social-item text-center">
+            <a href="/atom.xml">
+                <i class="iconfont social-icon icon-rss"></i>
+                <span class="menu-title hidden lg:inline">menu.rss</span>
+            </a>
+        </span>
+    
+</div>
+
+
+    </nav>
+</header>
+
+        <section class="main-section">
+            
+    <main class="flex-1 px-4 py-12 md:px-5 lg:px-8 lg:py-4 relative min-h-screen">
+    
+
+    <article class="content article article-archives article-type-list" itemscope="">
+        <header class="article-header">
+            
+    
+        <h1 class="article-title text-lg" itemprop="name">
+            NodeJs的事件循环机制与浏览器的事件循环机制
+        </h1>
+    
+
+
+
+            <p class="article-meta mb-3 text-xs">
+                <span class="article-date">
+    <i class="iconfont icon-calendar-check"></i>
+	<a href="/2020/05/25/event-loop/" class="article-date">
+	  <time datetime="2020-05-25T10:08:59.000Z" itemprop="datePublished">5月 25</time>
+	</a>
+</span>
+
+                
+
+                
+    <span class="article-tags">
+    <i class="iconfont icon-tag"></i>
+    <a class="article-tag-link" href="/tags/js/" rel="tag">js</a>
+  </span>
+
+
+                <span class="_partial/post-comment"><i class="icon icon-comment"></i>
+                    <a href="/2020/05/25/event-loop/#comments" class="article-comment-link">
+                        评论
+                    </a>
+                </span>
+                
+
+            </p>
+        </header>
+        <div class="marked-body article-body">
+            <h3 id="javaScript是单线程的脚本语言">javaScript是单线程的脚本语言</h3>
+<p>多线程有很多复杂性，比如： 多线程操作dom就会有很多复杂性，例如： 一个线程是删除dom，另一个线程更新同一个dom，这就造成冲突。<br>
+为避免这种情况的出现，JS是单线程的，另外JS的执行和运行是分开的，执行是依赖环境的，在node环境和浏览器环境下执行有区别。</p>
+<h3 id="eventLoop在浏览器环境下">eventLoop在浏览器环境下</h3>
+<p>浏览器执行js时，会分配一块堆内存(heap)和栈内存(stack), heap主要是用来存放类似对象的引用类型数据，stack是存放值类型、执行代码的。有一些任务是异步的，浏览器又是单线程的，如果不做处理，浏览器会等异步结果返回再往下执行，这会导致浏览器出现卡死的情况。为了避免这种情况的出现，浏览器会把创建一个任务队列函数，执行代码过程中若遇到异步任务，就把异步任务放进任务队列中，执行栈往下执行，执行栈执行完毕之后，去检查任务队列有没有已返回结果的，如果有执行任务队列中的任务，接下来执行异步任务中的任务，如果没有就等待。</p>
+<p>浏览器中，异步任务队列有分宏任务和微任务， 宏任务的优先级比微任务的优先级底，宏任务有setTimeout,setInterval,script, requestAnimationFrame， 微任务有promise和mutationObserver。</p>
+<p>例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.宏任务和微任务的执行顺序</span></span><br><span class="line">setTimeOut(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'timeout'</span>);</span><br><span class="line">&#125;, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> promise = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">resolve</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise init'</span>);</span><br><span class="line">  resolve(<span class="number">1</span>);</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise end'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">promise.then(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise reault:'</span>, res);</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结果：</span></span><br><span class="line"><span class="comment">// promise init</span></span><br><span class="line"><span class="comment">// promise end</span></span><br><span class="line"><span class="comment">// promise reault:1</span></span><br><span class="line"><span class="comment">// timeout</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 2.宏任务和微任务的交错执行</span></span><br><span class="line">setTimeOut(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'timeout1'</span>);</span><br><span class="line">  <span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'promise1'</span>);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise2'</span>);</span><br><span class="line">  setTimeOut(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'timeout2'</span>);</span><br><span class="line">  &#125;, <span class="number">0</span>);</span><br><span class="line">&#125;)</span><br><span class="line"><span class="comment">// 结果：</span></span><br><span class="line"><span class="comment">// promise2</span></span><br><span class="line"><span class="comment">// timeout1</span></span><br><span class="line"><span class="comment">// promise1</span></span><br><span class="line"><span class="comment">// timeout2</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 3.async await 拆解1</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">fn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">await</span> <span class="number">1234</span>; <span class="comment">// 相当于  return Promise.reslove(1234);</span></span><br><span class="line">&#125;</span><br><span class="line">fn().then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(res));</span><br><span class="line"><span class="comment">// 结果：</span></span><br><span class="line"><span class="comment">// 1234</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 4.async await 拆解2 await thenable</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">fn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">await</span> (&#123;</span><br><span class="line">    then(resolve) &#123;</span><br><span class="line">      resolve(<span class="number">1234</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 遇到thenable, 会递归使用promise.then调用， 直到resolve返回一个值</span></span><br><span class="line">fn().then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(res));</span><br><span class="line"><span class="comment">// 结果：</span></span><br><span class="line"><span class="comment">// 1234</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 5.使用async await 顺序判断(将async转换成我们熟悉的promise)</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">async1</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'async1 start'</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  <span class="keyword">await</span> async2();</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'async1 end'</span>);</span><br><span class="line">  <span class="comment">// 上面两行代码 相当于</span></span><br><span class="line">  <span class="comment">// new Promise(resolve =&gt; &#123;</span></span><br><span class="line">  <span class="comment">//   console.log('async2')</span></span><br><span class="line">  <span class="comment">//   resolve()</span></span><br><span class="line">  <span class="comment">// &#125;).then(res =&gt; console.log('async1 end'));</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">async2</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'async2'</span>)</span><br><span class="line">&#125;</span><br><span class="line">async1();</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'script'</span>);</span><br><span class="line"><span class="comment">// 结果：</span></span><br><span class="line"><span class="comment">// async1 start</span></span><br><span class="line"><span class="comment">// async2</span></span><br><span class="line"><span class="comment">// script</span></span><br><span class="line"><span class="comment">// async1 end</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 6.如果promise没有resolve或reject</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">async1</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'async1 start'</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">await</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">resolve</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'promise1'</span>)<span class="comment">// 没有执行resolve, promise状态没有变， await后面的代码不会执行</span></span><br><span class="line">  &#125;)</span><br><span class="line">  <span class="keyword">return</span> <span class="string">'async1 end'</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'script start'</span>);</span><br><span class="line">async1().then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(res));</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'script end'</span>);</span><br><span class="line"><span class="comment">// 结果：</span></span><br><span class="line"><span class="comment">// script start</span></span><br><span class="line"><span class="comment">// async1 start</span></span><br><span class="line"><span class="comment">// promise1</span></span><br><span class="line"><span class="comment">// script end</span></span><br><span class="line"><span class="comment">// async1 end (不执行)</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 7.某大厂真是面试题</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">async1</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'async1 start'</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">await</span> async2();</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'async1 end'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">async2</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'async2'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'script start'</span>);</span><br><span class="line"></span><br><span class="line">setTimeout(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'setTimeout'</span>);</span><br><span class="line">&#125;, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">async1();</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span> (<span class="params">resolve</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise1'</span>)</span><br><span class="line">  resolve()</span><br><span class="line">&#125;)</span><br><span class="line">.then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise2'</span>)</span><br><span class="line">&#125;)</span><br><span class="line">.then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise3'</span>)</span><br><span class="line">&#125;)</span><br><span class="line">.then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise4'</span>)</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'script end'</span>);</span><br><span class="line"><span class="comment">// 结果：</span></span><br><span class="line"><span class="comment">// script start</span></span><br><span class="line"><span class="comment">// async1 start</span></span><br><span class="line"><span class="comment">// async2</span></span><br><span class="line"><span class="comment">// promise1</span></span><br><span class="line"><span class="comment">// script end</span></span><br><span class="line"><span class="comment">// async1 end ??</span></span><br><span class="line"><span class="comment">// promise2</span></span><br><span class="line"><span class="comment">// promise3</span></span><br><span class="line"><span class="comment">// promise4</span></span><br><span class="line"><span class="comment">// setTimeout</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 8.第七题的升级</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">async1</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'async1 start'</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">resolve</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// resolve处理thenable也会在包裹一层promise， 会导致代码延迟一个微任务执行</span></span><br><span class="line">    resolve(async2());</span><br><span class="line">  &#125;).then(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"async1 end"</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// async函数 也会返回一个promise，会延迟一个微任务执行</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">async2</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// async是一个promise</span></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'async2'</span>);</span><br><span class="line">  <span class="comment">// return &#123;then(r)&#123;r()&#125;&#125; // 有thenable返回，跟async一样， 会延迟一个微任务执行</span></span><br><span class="line">  <span class="comment">// 返回普通值，不延迟执行</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">setTimeout(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'setTimeout'</span>);</span><br><span class="line">&#125;, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">async1();</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span> (<span class="params">resolve</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise1'</span>)</span><br><span class="line">  resolve()</span><br><span class="line">&#125;)</span><br><span class="line">.then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise2'</span>)</span><br><span class="line">&#125;)</span><br><span class="line">.then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise3'</span>)</span><br><span class="line">&#125;)</span><br><span class="line">.then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'promise4'</span>)</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结果：</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 1.async2为async函数</span></span><br><span class="line"><span class="comment">// async1 start</span></span><br><span class="line"><span class="comment">// async2</span></span><br><span class="line"><span class="comment">// promise1</span></span><br><span class="line"><span class="comment">// promise2</span></span><br><span class="line"><span class="comment">// promise3</span></span><br><span class="line"><span class="comment">// async1 end</span></span><br><span class="line"><span class="comment">// promise4</span></span><br><span class="line"><span class="comment">// setTimeout</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.async2不是async函数</span></span><br><span class="line"><span class="comment">// async1 start</span></span><br><span class="line"><span class="comment">// async2</span></span><br><span class="line"><span class="comment">// promise1</span></span><br><span class="line"><span class="comment">// async1 end</span></span><br><span class="line"><span class="comment">// promise2</span></span><br><span class="line"><span class="comment">// promise3</span></span><br><span class="line"><span class="comment">// promise4</span></span><br><span class="line"><span class="comment">// setTimeout</span></span><br></pre></td></tr></table></figure>
+<h3 id="eventLoop在node环境下的环境下">eventLoop在node环境下的环境下</h3>
+<p>nodejs有四层结构：应用层，v8引擎(解析js的语法)，node API层，libuv层(实现文件操作，事件循环， 实现异步的核心)<br>
+nodejs的I/O操作都是在线程池中指定某一线程执行的，nodejs的主线程主要负责调度，执行事件循环中的任务，即主线程只执行同步操作</p>
+<p>event-loop在node中有六个阶段， 每个阶段完成之后，会查询微任务队列(nodejs的微任务有process.nextTick、promise等)，如果有待完成的任务，则执行完微任务， 微任务执行完之后才会进入下一阶段, 详情如下:</p>
+<hr>
+<p>a. timer阶段: 执行已经到期的定时器的回调函数<br>
+b. pending callbacks阶段： 某些系统操作（例如TCP错误类型） 的回调函数<br>
+c. idle,prepare阶段：node内部使用（准备工作）</p>
+<p>d. poll轮询阶段: I/O操作的回调<br>
+ 过程：<br>
+ 如果轮询队列不为空，则取队列中第一个回调函数，直到队列为空或者达到系统最大限度<br>
+ 如果轮询队列为空<br>
+  如果之前设置过setImmediate，则进入下一个check阶段,<br>
+  如果没有设置过setImmediate,<br>
+  在当前poll阶段等待<br>
+  直到轮询队列添加回调函数，就执行回调函数<br>
+  如果定时器到点了，也会去下一个阶段</p>
+<p>e. check阶段： 执行setImmediate回调<br>
+f. close callbacks阶段： 执行close事件回调， 比如TCP断开连接</p>
+<hr>
+<p>废话不多说，上题</p>
+<p>比较setImmedidate 与 setTimeout 执行顺序</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 执行顺序不固定   因为setTimeout加入timer需要时间，当代码执行时，setTimeout不在timer里面，则先执行setImmediate, 否则先执行setTimeout；</span></span><br><span class="line">setTimeout(<span class="function"><span class="params">_</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'setTimeout'</span>))</span><br><span class="line">setImmediate(<span class="function"><span class="params">_</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'setImmediate'</span>));</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 如果两者都在同一个poll阶段注册， 那么执行顺序就能确定  先执行setImmdidate, 再执行setTimeout, 原因： poll阶段注册回调时间，往下走到check阶段，执行setImmediate, 接着进入timer阶段，定时器到期， 执行setTimeout</span></span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line">fs.readfile(<span class="string">'./readme.md'</span>, () =&gt; &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">_</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'setTimeout'</span>));</span><br><span class="line">    setImmedidate(<span class="function"><span class="params">_</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'setImmedidate'</span>));</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 理解process.nextTick</span></span><br><span class="line"><span class="comment">// 每一个阶段执行完成之后，在当前阶段尾触发  nextTick </span></span><br><span class="line"><span class="comment">// 案例：常见的nodejs回调函数第一个参数，都是抛出的错误</span></span><br><span class="line"><span class="comment">// 原因：因为nodejs是基于回调式的写法，process.nextTick的作用是处理本阶段的错误，返回err对象，防止主线程崩掉，让主线程正常执行</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">apiCall</span>(<span class="params">arg, callback</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> arg !== <span class="string">'string'</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> process.nextTick(</span><br><span class="line">            callback,</span><br><span class="line">            <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'argument should be string'</span>)</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 比较process.nextTick 和  setImmediate</span></span><br><span class="line"><span class="comment">// process.nextTick() 在同一个节点尾部立即执行</span></span><br><span class="line"><span class="comment">// setImmediate()在事件循环的check阶段出发</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 结果： nextTick  setImmediate </span></span><br><span class="line">setImmediate(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'setImmediate'</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">process.nextTick(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'nextTick'</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="eventLoop在node-11之前与node11之后的比较">eventLoop在node 11之前与node11之后的比较</h3>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// timer 阶段的执行时机变化</span></span><br><span class="line">setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'timer1'</span>);</span><br><span class="line">    <span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'promise1'</span>);</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">setTimeout(<span class="function"><span class="params">()</span>=&gt;</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'timer2'</span>);</span><br><span class="line">    <span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'promise2'</span>);</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结果</span></span><br><span class="line"><span class="comment">// &lt; node11:    timer1 timer2 promise1 promise2</span></span><br><span class="line"><span class="comment">// &gt;= node11:    timer1 promise1 timer2 promise2</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// check 阶段的执行时机变化</span></span><br><span class="line">setImmediate(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'immediate1'</span>));</span><br><span class="line"></span><br><span class="line">setImmediate(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'immediate2'</span>)</span><br><span class="line">    <span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'promise resolve'</span>))</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">setImmediate(<span class="function"><span class="params">()</span>=&gt;</span> <span class="built_in">console</span>.log(<span class="string">'immediate3'</span>))</span><br><span class="line">setImmddiate(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'immediate4'</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结果</span></span><br><span class="line"><span class="comment">// &lt; node11:    immediate1 immediate2 immediate3 immediate4       promise resolve</span></span><br><span class="line"><span class="comment">// &gt;= node11:    immediate1 immediate2   promise resolve   immediate3 immediate4</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// nextTick 队列的执行时机变化</span></span><br><span class="line">setImmediate(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'timeout1'</span>));</span><br><span class="line"></span><br><span class="line">setImmediate(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'timeout2'</span>)</span><br><span class="line">    process.nextTick(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'next tick'</span>))</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">setImmediate(<span class="function"><span class="params">()</span>=&gt;</span> <span class="built_in">console</span>.log(<span class="string">'timeout3'</span>))</span><br><span class="line">setImmddiate(<span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'timeout4'</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结果</span></span><br><span class="line"><span class="comment">// &lt; node11:    itimeout1 timeout2 timeout3 timeout4       next tick</span></span><br><span class="line"><span class="comment">// &gt;= node11:    timeout1 timeout2   next tick   timeoute3 itimeout4</span></span><br></pre></td></tr></table></figure>
+<h3 id="总结">总结:</h3>
+<p>node<br>
+ node11版本之前<br>
+ 一旦执行一个阶段， 会先将这个阶段里的所有任务执行完成之后，才会执行该阶段剩下的微任务<br>
+  node11版本之后<br>
+ 一旦制定一个阶段里的一个宏任务，就立刻执行对应的微任务队列</p>
+<p>浏览器的任务队列的执行顺序node11版本之后基本一致</p>
+<h2 id="References">References</h2>
+<p>[1] [<a href="https://blog.csdn.net/li420520/article/details/82900716" target="_blank" rel="noopener">https://blog.csdn.net/li420520/article/details/82900716</a>]<br>
+[2] [<a href="https://zhuanlan.zhihu.com/p/88770385" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/88770385</a>]</p>
+
+        </div>
+        
+<blockquote class="copyright">
+    <p><strong>本文链接 : </strong><a class="permalink" href="https://github.com/gslience/gslience.github.io/2020/05/25/event-loop/">https://github.com/gslience/gslience.github.io/2020/05/25/event-loop/</a></p>
+    <p><strong>This article is available under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer">Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</a> License</strong></p>
+</blockquote>
+
+
+    </article>
+    
+    <section id="comments">
+        
+    </section>
+
+
+    
+
+</main>
+
+
+<aside style="" id="sidebar" class="aside aside-fixture">
+    <div class="toc-sidebar">
+        <nav id="toc" class="article-toc">
+            <h3 class="toc-title">文章目录</h3>
+            <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#javaScript是单线程的脚本语言"><span class="toc-number">1.</span> <span class="toc-text">javaScript是单线程的脚本语言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#eventLoop在浏览器环境下"><span class="toc-number">2.</span> <span class="toc-text">eventLoop在浏览器环境下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#eventLoop在node环境下的环境下"><span class="toc-number">3.</span> <span class="toc-text">eventLoop在node环境下的环境下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#eventLoop在node-11之前与node11之后的比较"><span class="toc-number">4.</span> <span class="toc-text">eventLoop在node 11之前与node11之后的比较</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-number">5.</span> <span class="toc-text">总结:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#References"><span class="toc-number"></span> <span class="toc-text">References</span></a>
+        </nav>
+    </div>
+</aside>
+
+
+
+
+
+        </section>
+        <footer class="hidden lg:block fixed bottom-0 left-0 sm:w-1/12 lg:w-1/6 bg-gray-100 z-40">
+    
+    <div class="footer-social-links">
+        
+            <a href="https://github.com/fengkx">
+                <i class="iconfont icon-github"></i>
+            </a>
+        
+            <a href="https://t.me/fengkx" target="_blank" rel="noopener">
+                <i class="iconfont icon-telegram"></i>
+            </a>
+        
+            <a href="https://twitter.com/example" target="_blank" rel="noopener">
+                <i class="iconfont icon-twitter"></i>
+            </a>
+        
+            <a href="/atom.xml">
+                <i class="iconfont icon-rss"></i>
+            </a>
+        
+    </div>
+    
+    
+</footer>
+
+        <div id="mask" class="hidden mask fixed inset-0 bg-gray-900 opacity-75 z-40"></div>
+        <div id="search-view-container" class="hidden shadow-xl"></div>
+        
+<script src="/js/dom-event.min.js"></script>
+
+<script src="//cdn.jsdelivr.net/npm/yox@1.0.0-alpha.121/dist/standard/prod/yox.min.js"></script>
+
+
+<script src="/js/search.min.js"></script>
+
+
+
+    <script src="//cdn.jsdelivr.net/npm/lightgallery.js@1.1.3/dist/js/lightgallery.min.js"></script>
+    
+<script src="/js/light-gallery.min.js"></script>
+
+
+
+
+
+    </body>
+</html>
