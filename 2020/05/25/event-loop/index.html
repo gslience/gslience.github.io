@@ -28,6 +28,8 @@
     
     
     
+        <link href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css" rel="stylesheet">
+    
     
         <link href="//cdn.jsdelivr.net/npm/lightgallery.js@1.1.3/dist/css/lightgallery.min.css" rel="stylesheet">
     
@@ -276,6 +278,8 @@ f. close callbacks阶段： 执行close事件回调， 比如TCP断开连接</p>
     
     <section id="comments">
         
+
+        
     </section>
 
 
@@ -332,6 +336,22 @@ f. close callbacks阶段： 执行close事件回调， 比如TCP断开连接</p>
 
 
 <script src="/js/search.min.js"></script>
+
+
+    <script src="//cdn.jsdelivr.net/npm/gitalk@1.5.2/dist/gitalk.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '65be36531e575285237e',
+        clientSecret: 'f9a3eb2a7e173ad171c6e5800a02d722758e59d6',
+        repo: 'https://github.com/gslience/gslience.github.io',
+        owner: 'gslience',
+        admin: ['gslience'],
+        id: md5(location.pathname),
+        distractionFreeMode: true
+    })
+    gitalk.render('comments')
+</script>
 
 
 
